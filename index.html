@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+        .input-section, .preview-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            flex: 1;
+        }
+        .preview-section {
+            flex: 1;
+            display: none;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #downloadBtn {
+            background-color: #008CBA;
+        }
+        #downloadBtn:hover {
+            background-color: #007399;
+        }
+        .resume-preview {
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .resume-preview h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .resume-preview .contact {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .resume-preview hr {
+            border: 0;
+            border-top: 2px solid #333;
+            margin: 10px 0;
+        }
+        .resume-preview h2 {
+            color: #000;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+        .resume-preview ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .preview-section {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <h1>Resume Generator</h1>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" placeholder="Shaik Nazeer" >
+            </div>
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" id="address" placeholder="Hyderabad">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="nazeer@gmail.com" >
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" placeholder="9876543210">
+            </div>
+            <div class="form-group">
+                <label for="linkedin">LinkedIn</label>
+                <input type="text" id="linkedin" placeholder="linkedin/nazeer" >
+            </div>
+            <div class="form-group">
+                <label for="github">GitHub</label>
+                <input type="text" id="github" placeholder="github/nazeer">
+            </div>
+            <div class="form-group">
+                <label for="education">Education (One per line)</label>
+                <textarea id="education" placeholder="B.Tech, Intermediate, SSC"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="skills">Technical Skills (Comma-separated)</label>
+                <textarea id="skills" placeholder="java, python, c/c++"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="projects">Projects (One per line, format: Title | Description | Skills)</label>
+                <textarea id="projects" placeholder="predicting accuracy of cricket players using machine learning"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="certifications">Certifications (One per line)</label>
+                <textarea id="certifications" placeholder="Google big data analytics"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="achievements">Achievements (One per line)</label>
+                <textarea id="achievements" placeholder="solve 300+ problems in leetcode"></textarea>
+            </div>
+            <button onclick="generateResume()">Generate Resume</button>
+            <button id="downloadBtn" onclick="downloadPDF()" style="display: none;">Download PDF</button>
+        </div>
+        <div class="preview-section" id="previewSection">
+            <h2>Resume Preview</h2>
+            <div class="resume-preview" id="resumePreview"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function generateResume() {
+            const name = document.getElementById('name').value || 'Your Name';
+            const address = document.getElementById('address').value || 'Your Address';
+            const email = document.getElementById('email').value || 'Your Email';
+            const phone = document.getElementById('phone').value || 'Your Phone';
+            const linkedin = document.getElementById('linkedin').value || 'LinkedIn';
+            const github = document.getElementById('github').value || 'GitHub';
+            const education = document.getElementById('education').value.split('\n').filter(line => line.trim());
+            const skills = document.getElementById('skills').value.split(',').map(skill => skill.trim()).filter(skill => skill);
+            const projects = document.getElementById('projects').value.split('\n').filter(line => line.trim());
+            const certifications = document.getElementById('certifications').value.split('\n').filter(line => line.trim());
+            const achievements = document.getElementById('achievements').value.split('\n').filter(line => line.trim());
+
+            let resumeHTML = `
+                <h1>${name}</h1>
+                <div class="contact">
+                    ${address} | ${email} | ${phone} | ${linkedin} | ${github}
+                </div>
+                <hr>
+                <h2>Education</h2>
+                <ul>
+                    ${education.map(edu => {
+                        const [degree, institute, duration, score] = edu.split(' | ');
+                        return `<li><strong>${degree || ''}</strong><br>${institute || ''} | ${duration || ''}<br>${score || ''}</li>`;
+                    }).join('')}
+                </ul>
+                <h2>Technical Skills</h2>
+                <ul>
+                    ${skills.map(skill => `<li>${skill}</li>`).join('')}
+                </ul>
+                <h2>Projects</h2>
+                <ul>
+                    ${projects.map(project => {
+                        const [title, description, skills] = project.split(' | ');
+                        return `<li><strong>${title || ''}</strong><br>${description || ''}<br>Skills: ${skills || ''}</li>`;
+                    }).join('')}
+                </ul>
+                <h2>Certifications</h2>
+                <ul>
+                    ${certifications.map(cert => `<li>${cert}</li>`).join('')}
+                </ul>
+                <h2>Achievements</h2>
+                <ul>
+                    ${achievements.map(ach => `<li>${ach}</li>`).join('')}
+                </ul>
+            `;
+
+            document.getElementById('resumePreview').innerHTML = resumeHTML;
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            window.resumeHTML = resumeHTML;
+        }
+
+        function downloadPDF() {
+            const resumeElement = document.getElementById('resumePreview');
+            html2canvas(resumeElement, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const imgProps = doc.getImageProperties(imgData);
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                doc.save('resume.pdf');
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                alert('Failed to generate PDF. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
